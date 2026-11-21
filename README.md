@@ -7,16 +7,17 @@
 - `llm_client.py` — 封装的调用模块，对外提供 `chat()` 和 `ask()`
 - `demo1.py` / `demo2.py` — 调用示例
 - `practice1.py` — 封装练习版
-- `test1.py` ~ `test3.py` — 从零到跑通的演进过程
+- `test1.py` ~ `test3.py` — LLM调用的练习代码
 
 ## 运行
 
+```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install httpx
 $env:LLM_API_KEY = "sk-..."
 python demo1.py
-
+```
 ## 技术要点
 
 - 直接 POST `https://api.deepseek.com/chat/completions`

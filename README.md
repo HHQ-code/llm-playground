@@ -7,7 +7,7 @@
 - `llm_client.py` — 封装的调用模块，对外提供 `chat()` 和 `ask()`
 - `demo1.py` / `demo2.py` — 调用示例
 - `practice1.py` — 封装练习版
-- `test1.py` ~ `test3.py` — LLM调用的练习代码
+- `test1.py` — LLM调用的练习代码
 
 ## 运行
 

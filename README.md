@@ -30,7 +30,7 @@ python demo1.py
 - 响应解析：`choices[0].message.content`
 - 流式：请求加 `stream: true`，逐行解析 SSE，字段从 `message` 变为 `delta`
 - 多轮：`messages` 列表按轮次累积 `user` / `assistant`，每轮全量重发
-- 并发：`asyncio.gather` 同时发起多个请求，10 个请求从约 18s 降到约 3s
+- 并发：`asyncio.gather` 同时发起 10 个请求，实测从 9.43s 降到 1.47s（6.4 倍）
 - `usage` 含 token 用量，可估算单次调用成本
 
 ## 学习进度

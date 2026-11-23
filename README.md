@@ -5,7 +5,7 @@
 ## 目录
 
 - `llm_client.py` — 封装的调用模块，提供 `chat()` 和 `ask()`
-- `demo1.py` / `demo2.py` — 调用示例
+- `demo1.py`  — 封装调用示例
 - `streamtest.py` — SSE 流式输出，统计首 token 延迟
 - `multiturntest.py` — 多轮对话，维护 messages 历史
 - `practice1.py` — 封装练习版

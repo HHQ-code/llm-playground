@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LLM Playground - 流式对话</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 40px 20px 60px;
+      background: #fafafa;
+      color: #222;
+      line-height: 1.7;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin: 0 0 6px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 14px;
+      margin-bottom: 28px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    input {
+      flex: 1;
+      padding: 12px 14px;
+      font-size: 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    input:focus { border-color: #2b6cb0; }
+
+    button {
+      padding: 12px 24px;
+      font-size: 15px;
+      color: #fff;
+      background: #2b6cb0;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background .2s;
+      white-space: nowrap;
+    }
+
+    button:hover:not(:disabled) { background: #245a94; }
+    button:disabled { background: #a0aec0; cursor: not-allowed; }
+
+    #output {
+      min-height: 160px;
+      padding: 20px;
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 16px;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 8px;
+      height: 18px;
+      background: #2b6cb0;
+      vertical-align: text-bottom;
+      animation: blink 1s steps(2) infinite;
+    }
+
+    @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+
+    .meta {
+      margin-top: 12px;
+      font-size: 13px;
+      color: #999;
+    }
+
+    .error { color: #c53030; }
+  </style>
+</head>
+<body>
+
+  <h1>LLM Playground</h1>
+  <div class="subtitle">流式输出演示 · FastAPI + SSE</div>
+
+  <div class="input-row">
+    <input id="question" placeholder="输入你的问题，回车发送" value="用三句话解释什么是 RAG">
+    <button id="sendBtn">发送</button>
+  </div>
+
+  <div id="output"></div>
+  <div class="meta" id="meta"></div>
+
+  <script>
+    const input = document.getElementById('question');
+    const btn = document.getElementById('sendBtn');
+    const output = document.getElementById('output');
+    const meta = document.getElementById('meta');
+
+    let busy = false;
+
+    async function send() {
+      const question = input.value.trim();
+      if (!question || busy) return;
+
+      busy = true;
+      btn.disabled = true;
+      output.textContent = '';
+      output.classList.remove('error');
+      meta.textContent = '生成中…';
+
+      const started = performance.now();
+      let firstTokenAt = null;
+
+      try {
+        const resp = await fetch('/chat/stream', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question })
+        });
+
+        if (!resp.ok) {
+          throw new Error(`HTTP ${resp.status}`);
+        }
+
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder();
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const text = decoder.decode(value, { stream: true });
+          if (text && firstTokenAt === null) {
+            firstTokenAt = performance.now() - started;
+          }
+          output.textContent += text;
+        }
+
+        const total = performance.now() - started;
+        meta.textContent =
+          `首 token ${(firstTokenAt / 1000).toFixed(2)}s · ` +
+          `总耗时 ${(total / 1000).toFixed(2)}s`;
+
+      } catch (err) {
+        output.classList.add('error');
+        output.textContent = '请求失败：' + err.message;
+        meta.textContent = '';
+      } finally {
+        busy = false;
+        btn.disabled = false;
+      }
+    }
+
+    btn.addEventListener('click', send);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.isComposing) send();
+    });
+  </script>
+
+</body>
+</html>

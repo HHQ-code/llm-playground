@@ -3,7 +3,7 @@ import os
 
 import httpx
 from fastapi import FastAPI
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 
 from llm_client import ask
@@ -70,3 +70,6 @@ def chat_stream(req: ChatRequest):
         stream_answer(req.question, req.system),
         media_type="text/plain; charset=utf-8",
     )
+@app.get("/")
+def index():
+    return FileResponse("index.html")

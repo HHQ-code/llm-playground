@@ -9,6 +9,8 @@
 - `llm_client.py` — 封装的调用模块，提供 `chat()` 和 `ask()`
 - `main.py` — FastAPI 服务，提供 `/chat`（一次性）与 `/chat/stream`（SSE 流式）
 - `index.html` — 前端页面，打字机效果演示
+- `test_api.py` — pytest 接口测试
+- `requirements.txt` — 依赖清单
 - `demo1.py` — 封装调用示例
 - `streamtest.py` — SSE 流式输出，统计首 token 延迟
 - `multiturntest.py` — 多轮对话，维护 messages 历史
@@ -50,6 +52,14 @@ uvicorn main:app --reload
 | POST | `/chat/stream` | 流式问答，逐字返回 |
 | GET | `/` | 前端演示页面 |
 
+## 测试
+
+```powershell
+pytest -v
+```
+
+3 个用例覆盖健康检查、参数校验和业务逻辑；调用模型的部分用 `monkeypatch` 打桩，测试不依赖网络、不产生费用。
+
 ## 技术要点
 
 - 直接 POST `https://api.deepseek.com/chat/completions`，不依赖 SDK
@@ -59,6 +69,7 @@ uvicorn main:app --reload
 - 多轮：`messages` 列表按轮次累积 `user` / `assistant`，每轮全量重发
 - 并发：`asyncio.gather` 同时发起 10 个请求，实测从 9.43s 降到 1.47s（6.4 倍）
 - 服务化：FastAPI + pydantic 定义接口，`/docs` 自动生成交互式文档
+- 测试：pytest + TestClient，mock 掉模型调用，3 个用例 0.35s 跑完
 - `usage` 含 token 用量，可估算单次调用成本
 
 ## 学习进度
@@ -69,4 +80,5 @@ uvicorn main:app --reload
 - [x] 多轮对话上下文管理
 - [x] asyncio 并发调用
 - [x] FastAPI 服务化（含流式接口与前端页面）
+- [x] 单元测试
 - [ ] RAG 检索增强生成

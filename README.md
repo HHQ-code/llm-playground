@@ -1,5 +1,7 @@
 # LLM Playground
+
 ![demo](docs/screenshot.png)
+
 学习大模型应用开发的第一批代码：不依赖任何 SDK，直接手写 HTTP 请求调用 `chat/completions`，封装成可复用的模块，并最终提供带流式输出的 HTTP 服务。
 
 ## 目录
